@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #20B2AA; /* Light Sea Green */
+            --primary-light: #E8F8F7;
+            --secondary-color: #1E9C96;
+            --success-color: #2ECC71;
+            --danger-color: #E74C3C;
+            --warning-color: #F39C12;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-color: #e9ecef;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #F5FFFE;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px 30px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dashboard-header h2 {
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .close-btn {
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+        
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        .content-area {
+            padding: 30px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 16px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .table tbody tr {
+            transition: background-color 0.2s;
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background-color: var(--light-color);
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(32, 178, 170, 0.05);
+        }
+        
+        .table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            width: 110px; /* Fixed width for all badges */
+            text-align: center;
+            box-sizing: border-box;
+            line-height: 1.2;
+        }
+
+        .status-badge i {
+            margin-right: 6px;
+            font-size: 0.7rem;
+            width: 12px; /* Fixed width for icons */
+            text-align: center;
+        }
+
+        /* Keep your existing status color classes */
+        .status-pending {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-invalid {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-color);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--border-color);
+            margin-bottom: 15px;
+            opacity: 0.6;
+        }
+        
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-top: 10px;
+            color: var(--gray-color);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 3px solid rgba(32, 178, 170, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .message {
+            text-align: center;
+            margin: 20px 0;
+            padding: 12px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            position: relative;
+            padding-right: 40px;
+        }
+        
+        .text-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success-color) !important;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .text-danger {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color) !important;
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .text-info {
+            background-color: rgba(32, 178, 170, 0.1);
+            color: var(--primary-color) !important;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .message-close {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+        
+        .message-close:hover {
+            opacity: 1;
+        }
+        
+        .amount {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+        
+        .date-cell {
+            white-space: nowrap;
+        }
+        
+        .upi-id {
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+        }
+        
+        .archived-badge {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--gray-color);
+        }
+        
+        @media (max-width: 992px) {
+            .dashboard-container {
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+            }
+            
+            .content-area {
+                padding: 20px 15px;
+            }
+            
+            .dashboard-header {
+                padding: 20px;
+            }
+            
+            .table thead th,
+            .table td {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .dashboard-header h2 {
+                font-size: 1.3rem;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .table thead th,
+            .table td {
+                padding: 10px 8px;
+                font-size: 0.85rem;
+            }
+            
+            .status-badge {
+                padding: 4px 8px;
+                font-size: 0.8rem;
+            }
+            
+            .empty-state {
+                padding: 40px 15px;
+            }
+            
+            .empty-state i {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h2><i class="fas fa-history me-2"></i>Payment History</h2>
+            <div class="header-actions">
+                <div class="close-btn" onclick="goToDashboard()" title="Close">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Fee Type</th>
+                            <th>UPI ID</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="loading-spinner"></div>
+                                    <p>Loading payment history...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Key for storing payment history in localStorage
+        const PAYMENT_HISTORY_KEY = 'paymentHistoryData';
+        
+        function goToDashboard() {
+            window.location.href = "dashboard.html";
+        }
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            const registerNumber = localStorage.getItem("registerNumber");
+            const messageEl = document.getElementById("message");
+            const tableBody = document.getElementById("historyTable");
+
+            if (!registerNumber) {
+                showMessage("Please log in to view your payment history.", "danger");
+                renderEmptyState("Please login to view payment history");
+                return;
+            }
+
+            try {
+                // Show loading state
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="loading-spinner"></div>
+                                <p>Loading payment history...</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                // Check if we have cached data in localStorage
+                const cachedData = localStorage.getItem(`${PAYMENT_HISTORY_KEY}_${registerNumber}`);
+                let payments = [];
+                
+                if (cachedData) {
+                    // Use cached data while we fetch fresh data
+                    const parsedData = JSON.parse(cachedData);
+                    if (parsedData.payments && Array.isArray(parsedData.payments)) {
+                        payments = parsedData.payments;
+                        renderPaymentHistory(payments);
+                        showMessage("Displaying cached payment history. Fetching latest data...", "info");
+                    }
+                }
+
+                // Always try to fetch fresh data
+                try {
+                    const res = await fetch(`http://localhost:3001/payment-history/${registerNumber}`);
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        
+                        // Store the data in localStorage for offline use
+                        if (data.payments && Array.isArray(data.payments)) {
+                            localStorage.setItem(`${PAYMENT_HISTORY_KEY}_${registerNumber}`, JSON.stringify(data));
+                            payments = data.payments;
+                            
+                            // Show message if payments were archived
+                            if (data.message) {
+                                showMessage(data.message, "success");
+                            } else {
+                                showMessage("Payment history loaded successfully", "success");
+                            }
+                        }
+                    } else {
+                        const error = await res.json();
+                        console.warn("Failed to fetch fresh data, using cached:", error.message);
+                        if (!payments.length) {
+                            throw new Error(error.message || "Failed to load payment history");
+                        }
+                    }
+                } catch (fetchError) {
+                    console.warn("Fetch error, using cached data if available:", fetchError);
+                    if (!payments.length) {
+                        throw fetchError;
+                    }
+                }
+
+                // Render the final data (either fresh or cached)
+                if (payments.length) {
+                    renderPaymentHistory(payments);
+                } else {
+                    renderEmptyState("No payment records available");
+                    showMessage("Your payment history is currently empty", "info");
+                }
+            } catch (error) {
+                console.error("Error loading payment history:", error);
+                
+                // Check if this is a "no data" scenario
+                if (error.message.includes("No payment history found")) {
+                    renderEmptyState("No payment records available");
+                    showMessage("Your payment history is currently empty", "info");
+                } else {
+                    showMessage(error.message || "Error loading payment history. Showing cached data if available.", "danger");
+                    renderEmptyState("Error loading payment history");
+                }
+            }
+        });
+
+        function renderPaymentHistory(payments) {
+            const tableBody = document.getElementById("historyTable");
+            
+            if (!Array.isArray(payments) || payments.length === 0) {
+                renderEmptyState("No payment history available");
+                return;
+            }
+
+            // Sort payments by date (newest first)
+            payments.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            tableBody.innerHTML = payments.map((payment, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td class="date-cell">${formatDate(payment.date)}</td>
+                    <td class="amount">₹${payment.amount ? payment.amount.toLocaleString('en-IN') : 'N/A'}</td>
+                    <td>${payment.feeType || "N/A"}</td>
+                    <td class="upi-id">${payment.upiId || "N/A"}</td>
+                    <td>
+                        <span class="status-badge ${getStatusClass(payment.status)}">
+                            <i class="fas ${getStatusIcon(payment.status)}"></i>
+                            ${payment.status || "Unknown"}
+                        </span>
+                        ${payment.archived ? '<span class="status-badge archived-badge ms-2"><i class="fas fa-archive"></i> Archived</span>' : ''}
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function renderEmptyState(message = "No payment history available.") {
+            const tableBody = document.getElementById("historyTable");
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <p>${message}</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return "N/A";
+            try {
+                const date = new Date(dateString);
+                return isNaN(date.getTime()) ? "N/A" : date.toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            } catch {
+                return "N/A";
+            }
+        }
+
+        function getStatusClass(status) {
+            if (!status) return 'status-pending';
+            
+            switch (status.toLowerCase()) {
+                case 'pending': return 'status-pending';
+                case 'failed': 
+                case 'invalid': 
+                case 'rejected': return 'status-invalid';
+                case 'success':
+                case 'completed': 
+                case 'approved': return 'status-success';
+                default: return 'status-pending';
+            }
+        }
+
+        function getStatusIcon(status) {
+            if (!status) return 'fa-question-circle';
+            
+            switch (status.toLowerCase()) {
+                case 'pending': return 'fa-clock';
+                case 'failed': 
+                case 'invalid': 
+                case 'rejected': return 'fa-times-circle';
+                case 'success':
+                case 'completed': 
+                case 'approved': return 'fa-check-circle';
+                default: return 'fa-question-circle';
+            }
+        }
+
+        function showMessage(text, type = "info") {
+            const messageEl = document.getElementById("message");
+            messageEl.innerHTML = `
+                ${text}
+                <span class="message-close" onclick="this.parentElement.textContent=''; this.parentElement.className='message'">
+                    <i class="fas fa-times"></i>
+                </span>
+            `;
+            messageEl.className = `message text-${type}`;
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

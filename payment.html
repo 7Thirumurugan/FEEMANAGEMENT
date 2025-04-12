@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+        .close-button:hover {
+            color: red;
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            text-align: left;
+            margin: 10px 0 5px;
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+        }
+        button {
+            width: 100%;
+            background-color: lightseagreen;
+            color: white;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: darkcyan;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            text-align: left;
+            margin-bottom: 10px;
+            display: none;
+        }
+        #paymentMessage {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #processingMessage {
+            display: none;
+            color: orange;
+            font-weight: bold;
+        }
+        .invalid {
+            border-color: red;
+            background-color: #ffeeee;
+        }
+        .valid {
+            border-color: green;
+        }
+        
+        /* Modal/Popup styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            width: auto;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal-cancel {
+            background-color: #f44336;
+        }
+        .modal-cancel:hover {
+            background-color: #d32f2f;
+        }
+        .modal-confirm {
+            background-color: #4CAF50;
+        }
+        .modal-confirm:hover {
+            background-color: #388E3C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="close-button" onclick="showCloseModal()">✖</span>
+        <h2>Payment</h2>
+        <form id="paymentForm">
+            <label>Fee Type:</label>
+            <input type="text" id="feeType" readonly />
+
+            <label for="paymentDate">Date of Payment:</label>
+            <input type="date" id="paymentDate" required />
+            <div id="dateError" class="error">Please select a valid date</div>
+
+            <label for="upiId">UPI ID (12 digits):</label>
+            <input type="text" id="upiId" placeholder="Enter 12 digit UPI ID" 
+                   maxlength="12" required />
+            <div id="upiError" class="error">UPI ID must be exactly 12 digits</div>
+
+            <label for="amount">Amount (₹):</label>
+            <input type="number" id="amount" min="1" required />
+            <div id="amountError" class="error">Please enter a valid amount</div>
+
+            <button id="submitButton" type="submit">Submit Payment</button>
+        </form>
+
+        <p id="paymentMessage"></p>
+        <p id="processingMessage">Processing...</p>
+    </div>
+
+    <!-- Modal/Popup for close confirmation -->
+    <div id="closeModal" class="modal">
+        <div class="modal-content">
+            <h3>Cancel Payment?</h3>
+            <p>Are you sure you want to cancel this payment? Any unsaved data will be lost.</p>
+            <div class="modal-buttons">
+                <button class="modal-cancel" onclick="hideCloseModal()">No, Continue</button>
+                <button class="modal-confirm" onclick="goToDashboard()">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showCloseModal() {
+            document.getElementById('closeModal').style.display = 'flex';
+        }
+
+        function hideCloseModal() {
+            document.getElementById('closeModal').style.display = 'none';
+        }
+
+        function goToDashboard() {
+            hideCloseModal();
+            window.location.href = "dashboard.html";
+        }
+
+        // Get today's date in YYYY-MM-DD format
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Set max date to today and default value to today
+        function setupDateInput() {
+            const today = getTodayDate();
+            const dateInput = document.getElementById("paymentDate");
+            dateInput.max = today;
+            dateInput.value = today;
+        }
+
+        // Validate the selected date is not in the future
+        function validateDate() {
+            const dateInput = document.getElementById("paymentDate");
+            const errorElement = document.getElementById("dateError");
+            const today = new Date(getTodayDate());
+            const selectedDate = new Date(dateInput.value);
+            
+            if (selectedDate > today) {
+                dateInput.classList.add("invalid");
+                dateInput.classList.remove("valid");
+                errorElement.style.display = "block";
+                return false;
+            }
+            dateInput.classList.remove("invalid");
+            dateInput.classList.add("valid");
+            errorElement.style.display = "none";
+            return true;
+        }
+
+        // Validate UPI ID is exactly 12 digits
+        function validateUpiId() {
+            const upiInput = document.getElementById("upiId");
+            const errorElement = document.getElementById("upiError");
+            const isValid = /^\d{12}$/.test(upiInput.value);
+            
+            if (!isValid) {
+                upiInput.classList.add("invalid");
+                upiInput.classList.remove("valid");
+                errorElement.style.display = "block";
+                return false;
+            }
+            upiInput.classList.remove("invalid");
+            upiInput.classList.add("valid");
+            errorElement.style.display = "none";
+            return true;
+        }
+
+        // Validate amount is positive number
+        function validateAmount() {
+            const amountInput = document.getElementById("amount");
+            const errorElement = document.getElementById("amountError");
+            const amount = parseFloat(amountInput.value);
+            const isValid = !isNaN(amount) && amount > 0;
+            
+            if (!isValid) {
+                amountInput.classList.add("invalid");
+                amountInput.classList.remove("valid");
+                errorElement.style.display = "block";
+                return false;
+            }
+            amountInput.classList.remove("invalid");
+            amountInput.classList.add("valid");
+            errorElement.style.display = "none";
+            return true;
+        }
+
+        // Restrict UPI ID input to numbers only
+        function restrictUpiInput() {
+            const upiInput = document.getElementById("upiId");
+            upiInput.value = upiInput.value.replace(/\D/g, ''); // Remove non-digits
+            if (upiInput.value.length > 12) {
+                upiInput.value = upiInput.value.slice(0, 12);
+            }
+            validateUpiId();
+        }
+
+        // Initialize the page
+        window.onload = function() {
+            setupDateInput();
+            document.getElementById("processingMessage").style.display = "none";
+            
+            // Set up event listeners
+            document.getElementById("paymentDate").addEventListener("change", validateDate);
+            document.getElementById("upiId").addEventListener("input", restrictUpiInput);
+            document.getElementById("amount").addEventListener("input", validateAmount);
+            
+            // Fill in fee type and amount from URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const feeType = params.get("type");
+            const amount = params.get("amount");
+            
+            if (feeType) {
+                document.getElementById("feeType").value = feeType.charAt(0).toUpperCase() + feeType.slice(1) + " Fees";
+            }
+            if (amount) {
+                document.getElementById("amount").value = amount;
+                validateAmount();
+            }
+        };
+
+        // Handle form submission
+        document.getElementById("paymentForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            // Validate all fields
+            const isDateValid = validateDate();
+            const isUpiValid = validateUpiId();
+            const isAmountValid = validateAmount();
+            
+            if (!isDateValid || !isUpiValid || !isAmountValid) {
+                document.getElementById("paymentMessage").textContent = "Please fix the errors above";
+                document.getElementById("paymentMessage").style.color = "red";
+                return;
+            }
+            
+            const feeType = document.getElementById("feeType").value.replace(" Fees", "").toLowerCase();
+            const paymentDate = document.getElementById("paymentDate").value;
+            const upiId = document.getElementById("upiId").value;
+            const amount = document.getElementById("amount").value;
+            const token = localStorage.getItem("token");
+            const user = JSON.parse(localStorage.getItem("user"));
+            
+            if (!token || !user) {
+                document.getElementById("paymentMessage").textContent = "Unauthorized! Please log in.";
+                document.getElementById("paymentMessage").style.color = "red";
+                return;
+            }
+
+            // Show processing state
+            document.getElementById("submitButton").disabled = true;
+            document.getElementById("processingMessage").style.display = "block";
+            document.getElementById("paymentMessage").textContent = "";
+
+            try {
+                // Set processing status in localStorage
+                localStorage.setItem(`${user.registerNumber}_${feeType}_processing`, "true");
+                localStorage.setItem(`${user.registerNumber}_${feeType}_processing_amount`, amount);
+                localStorage.setItem(`${user.registerNumber}_${feeType}_processing_time`, Date.now().toString());
+
+                const res = await fetch("http://localhost:3001/process-payment", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ 
+                        paymentDate, 
+                        upiId, 
+                        amount, 
+                        feeType,
+                        registerNumber: user.registerNumber 
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.getElementById("paymentMessage").textContent = "Payment submitted successfully!";
+                    document.getElementById("paymentMessage").style.color = "green";
+                    
+                    // Store payment in history
+                    const newPayment = {
+                        date: paymentDate,
+                        amount: amount,
+                        feeType: feeType,
+                        upiId: upiId,
+                        status: "Pending",
+                        registerNumber: user.registerNumber,
+                        timestamp: new Date().toISOString()
+                    };
+                    let history = JSON.parse(localStorage.getItem("paymentHistory")) || [];
+                    history.push(newPayment);
+                    localStorage.setItem("paymentHistory", JSON.stringify(history));
+
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html";
+                    }, 1500);
+                } else {
+                    localStorage.removeItem(`${user.registerNumber}_${feeType}_processing`);
+                    document.getElementById("paymentMessage").textContent = data.message || "Payment failed!";
+                    document.getElementById("paymentMessage").style.color = "red";
+                }
+            } catch (error) {
+                localStorage.removeItem(`${user.registerNumber}_${feeType}_processing`);
+                document.getElementById("paymentMessage").textContent = "Server connection failed! Please try again.";
+                document.getElementById("paymentMessage").style.color = "red";
+                console.error("Payment error:", error);
+            } finally {
+                document.getElementById("processingMessage").style.display = "none";
+                document.getElementById("submitButton").disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

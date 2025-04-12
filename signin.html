@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #20B2AA;
+            --primary-hover: #1E9C96;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --input-focus: 0 0 0 0.25rem rgba(32, 178, 170, 0.25);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4f0f9 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 15px;
+            margin: 0 auto;
+        }
+        
+        .signin-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+        
+        .signin-container:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-control {
+            height: 48px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding-left: 15px;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: var(--input-focus);
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            height: 48px;
+            border-radius: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: var(--transition);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        #message {
+            min-height: 24px;
+            font-size: 14px;
+        }
+        
+        .links {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        
+        .links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+        
+        .links a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--secondary-color);
+        }
+        
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .divider::before {
+            margin-right: 10px;
+        }
+        
+        .divider::after {
+            margin-left: 10px;
+        }
+        
+        /* Loading spinner */
+        .spinner-border {
+            display: none;
+            width: 1.2rem;
+            height: 1.2rem;
+            border-width: 0.15em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="signin-container">
+        <div class="logo">
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <h2>Welcome Back</h2>
+        <form id="signinForm">
+            <div class="input-group mb-3">
+                <input type="text" id="registerNumber" class="form-control" placeholder="Register Number" required>
+                <span class="input-icon"><i class="fas fa-id-card"></i></span>
+            </div>
+            <div class="input-group mb-3">
+                <input type="email" id="email" class="form-control" placeholder="Email" required>
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            </div>
+            <div class="input-group mb-4">
+                <input type="password" id="password" class="form-control" placeholder="Password" required>
+                <span class="input-icon"><i class="fas fa-lock"></i></span>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 mb-3" id="submitBtn">
+                <span id="btnText">Sign In</span>
+                <span class="spinner-border spinner-border-sm" id="spinner" role="status" aria-hidden="true"></span>
+            </button>
+            
+            <p id="message" class="text-center mt-2"></p>
+            
+            <div class="links">
+                <div class="d-flex justify-content-between">
+                    <a href="signup.html">Create Account</a>
+                    <a href="forgot-password.html">Forgot Password?</a>
+                </div>
+                <div class="divider">or</div>
+                <a href="admin-login.html">Admin Login</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.getElementById("signinForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById("submitBtn");
+        const btnText = document.getElementById("btnText");
+        const spinner = document.getElementById("spinner");
+        const messageEl = document.getElementById("message");
+        
+        // Show loading state
+        btnText.textContent = "Signing In...";
+        spinner.style.display = "inline-block";
+        submitBtn.disabled = true;
+        messageEl.textContent = "";
+        messageEl.className = "text-center mt-2";
+        
+        try {
+            const credentials = {
+                registerNumber: document.getElementById("registerNumber").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            };
+
+            const res = await fetch("http://localhost:3001/signin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(credentials)
+            });
+
+            const data = await res.json();
+            
+            if (res.ok) {
+                messageEl.textContent = "Sign in successful! Redirecting...";
+                messageEl.className = "text-center text-success mt-2";
+                
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                localStorage.setItem("registerNumber", data.user.registerNumber);
+                
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1000);
+            } else {
+                messageEl.textContent = data.message || "Sign in failed. Please try again.";
+                messageEl.className = "text-center text-danger mt-2";
+                
+                // Reset button state
+                btnText.textContent = "Sign In";
+                spinner.style.display = "none";
+                submitBtn.disabled = false;
+            }
+        } catch (error) {
+            messageEl.textContent = "Network error. Please try again later.";
+            messageEl.className = "text-center text-danger mt-2";
+            
+            // Reset button state
+            btnText.textContent = "Sign In";
+            spinner.style.display = "none";
+            submitBtn.disabled = false;
+            
+            console.error("Error:", error);
+        }
+    });
+</script>
+
+</body>
+</html>

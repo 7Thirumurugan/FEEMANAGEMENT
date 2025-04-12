@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Secure Access</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== CSS Variables ===== */
+        :root {
+            /* Primary Colors */
+            --color-primary: #38a169;
+            --color-primary-dark: #2f855a;
+            --color-primary-darker: #276749;
+            --color-primary-light: #68d391;
+            --color-primary-lighter: #c6f6d5;
+            
+            /* Neutral Colors */
+            --color-white: #ffffff;
+            --color-light: #f7fafc;
+            --color-gray-light: #e2e8f0;
+            --color-gray: #a0aec0;
+            --color-gray-dark: #718096;
+            --color-dark: #2d3748;
+            
+            /* Status Colors */
+            --color-danger: #e53e3e;
+            --color-success: #38a169;
+            --color-warning: #dd6b20;
+            
+            /* Effects */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            
+            /* Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            
+            /* Border */
+            --radius-sm: 0.5rem;
+            --radius: 0.75rem;
+            --radius-lg: 1rem;
+            
+            /* Transition */
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== Base Styles ===== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
+                        Ubuntu, Cantarell, sans-serif;
+            line-height: 1.5;
+            color: var(--color-dark);
+            background-color: var(--color-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--space-lg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 161, 105, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(39, 103, 73, 0.1) 0%, transparent 20%);
+        }
+
+        /* ===== Typography ===== */
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--space-sm);
+            letter-spacing: -0.025em;
+        }
+
+        p {
+            margin-bottom: var(--space-md);
+        }
+
+        /* ===== Utility Classes ===== */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: var(--color-gray-dark);
+            opacity: 0.9;
+        }
+
+        /* ===== Login Container ===== */
+        .login-container {
+            width: 100%;
+            max-width: 28rem;
+            background: var(--color-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transform: translateY(0);
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .login-container:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-0.25rem);
+        }
+
+        /* ===== Header Section ===== */
+        .header {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
+            color: var(--color-white);
+            padding: var(--space-xl) var(--space-lg);
+            text-align: center;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .logo {
+            width: 5rem;
+            height: 5rem;
+            background: var(--color-white);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .logo i {
+            color: var(--color-primary);
+            font-size: 2.25rem;
+            transition: var(--transition);
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            max-width: 20rem;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        /* ===== Form Container ===== */
+        .form-container {
+            padding: var(--space-xl);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-xl);
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-sm);
+            color: var(--color-dark);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* ===== Input Fields ===== */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i.fa-envelope,
+        .input-wrapper i.fa-lock {
+            position: absolute;
+            left: var(--space-md);
+            color: var(--color-primary);
+            transition: var(--transition);
+            z-index: 2;
+        }
+
+        input {
+            width: 100%;
+            padding: var(--space-md) var(--space-md) var(--space-md) 3.125rem;
+            border: 2px solid var(--color-gray-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background-color: var(--color-white);
+            color: var(--color-dark);
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            padding-right: 2.5rem; /* Space for eye icon */
+        }
+
+        input::placeholder {
+            color: var(--color-gray);
+            opacity: 1;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.3);
+        }
+
+        input:focus + i {
+            color: var(--color-primary-darker);
+        }
+
+        /* ===== Password Toggle ===== */
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--color-gray);
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            z-index: 2;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            color: var(--color-primary);
+        }
+
+        .password-toggle i {
+            display: block;
+        }
+
+        /* ===== Button Styles ===== */
+        .btn {
+            width: 100%;
+            padding: var(--space-md);
+            background: var(--color-primary-darker);
+            color: var(--color-white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            letter-spacing: 0.025em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-0.125rem);
+            box-shadow: 0 10px 15px -3px rgba(39, 103, 73, 0.2);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* ===== Message/Alert Styles ===== */
+        .message {
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-lg);
+            display: none;
+            font-size: 0.9rem;
+            animation: fadeIn 0.4s ease-out;
+            border-left: 4px solid transparent;
+            background-color: var(--color-white);
+        }
+
+        .message.error {
+            border-left-color: var(--color-danger);
+            color: var(--color-danger);
+            display: block;
+            box-shadow: 0 3px 10px rgba(229, 62, 62, 0.1);
+        }
+
+        .message.success {
+            border-left-color: var(--color-success);
+            color: var(--color-success);
+            display: block;
+            box-shadow: 0 3px 10px rgba(56, 161, 105, 0.1);
+        }
+
+        /* ===== Back Button ===== */
+        .back-btn {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-size: 1.5rem;
+            font-weight: 300;
+            text-decoration: none;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 10;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            margin-top: var(--space-xl);
+            font-size: 0.85rem;
+            color: var(--color-gray-dark);
+        }
+
+        .copyright {
+            margin-top: var(--space-md);
+            font-size: 0.8rem;
+            color: var(--color-gray);
+        }
+
+        /* ===== Animations ===== */
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(0.625rem); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* ===== Responsive Design ===== */
+        @media (max-width: 480px) {
+            .login-container {
+                max-width: 100%;
+            }
+            
+            .header {
+                padding: var(--space-lg);
+                clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+            }
+            
+            .form-container {
+                padding: var(--space-lg);
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .logo {
+                width: 4.375rem;
+                height: 4.375rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <a href="signin.html" class="back-btn" aria-label="Close and return to sign in">
+            &times;
+        </a>
+        
+        <div class="header">
+            <div class="logo" aria-hidden="true">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h1>Admin Portal</h1>
+            <p class="subtitle">Restricted access to authorized personnel only</p>
+        </div>
+        
+        <div class="form-container">
+            <div id="message" class="message" role="alert"></div>
+            
+            <div class="form-group">
+                <label for="email">Administrator Email</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="admin@institution.edu" required aria-describedby="emailHelp">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Security Key</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="••••••••" required aria-describedby="passwordHelp">
+                    <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                </div>
+            </div>
+            
+            <button class="btn" id="loginBtn" onclick="adminLogin()">
+                <i class="fas fa-fingerprint"></i> Verify Identity
+            </button>
+            
+            <div class="footer">
+                <p>For security reasons, please log out after each session</p>
+                <p class="copyright">© 2025 Institution Name. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Password toggle functionality
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('password');
+            
+            togglePassword.addEventListener('click', () => {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                togglePassword.classList.toggle('fa-eye-slash');
+                togglePassword.classList.toggle('fa-eye');
+            });
+            
+            // Enter key submission
+            document.getElementById('password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    adminLogin();
+                }
+            });
+        });
+
+        async function adminLogin() {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const messageEl = document.getElementById("message");
+            const loginBtn = document.getElementById("loginBtn");
+            
+            // Clear previous messages
+            messageEl.className = "message";
+            messageEl.textContent = "";
+            
+            // Validate inputs
+            if (!email || !password) {
+                showMessage("All fields are required for authentication", "error");
+                return;
+            }
+            
+            // Simple email validation
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showMessage("Please enter a valid email address", "error");
+                return;
+            }
+            
+            // Disable button during request
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            
+            try {
+                const response = await fetch("http://localhost:3001/admin/login", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Authentication failed. Please try again.");
+                }
+
+                // Store token and admin data
+                localStorage.setItem("adminToken", data.token);
+                localStorage.setItem("adminData", JSON.stringify(data.admin));
+                
+                showMessage("Identity verified! Redirecting to secure portal...", "success");
+                
+                // Redirect to dashboard after short delay
+                setTimeout(() => {
+                    window.location.href = "admin.html";
+                }, 1500);
+                
+            } catch (error) {
+                showMessage(error.message || "Security verification failed. Please check your credentials.", "error");
+                console.error("Login error:", error);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-fingerprint"></i> Verify Identity';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageEl = document.getElementById("message");
+            messageEl.textContent = message;
+            messageEl.className = `message ${type}`;
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageEl.className = "message";
+                    messageEl.textContent = "";
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

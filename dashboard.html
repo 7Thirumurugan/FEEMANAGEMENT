@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Dashboard</title>
+    <style>
+        /* ===== Modern Color Scheme with HSL ===== */
+        :root {
+            --primary-h: 174;
+            --primary-s: 70%;
+            --primary-l: 41%;
+            --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+            --primary-dark: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 8%));
+            --primary-light: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
+            
+            --success-h: 134;
+            --success-s: 61%;
+            --success-l: 41%;
+            --success: hsl(var(--success-h), var(--success-s), var(--success-l));
+            --success-light: hsla(var(--success-h), var(--success-s), var(--success-l), 0.1);
+            
+            --danger-h: 354;
+            --danger-s: 70%;
+            --danger-l: 54%;
+            --danger: hsl(var(--danger-h), var(--danger-s), var(--danger-l));
+            --danger-light: hsla(var(--danger-h), var(--danger-s), var(--danger-l), 0.1);
+            
+            --warning-h: 45;
+            --warning-s: 100%;
+            --warning-l: 50%;
+            --warning: hsl(var(--warning-h), var(--warning-s), var(--warning-l));
+            --warning-light: hsla(var(--warning-h), var(--warning-s), var(--warning-l), 0.1);
+            
+            --light: hsl(0, 0%, 100%);
+            --dark: hsl(210, 11%, 15%);
+            --gray: hsl(208, 7%, 46%);
+            --light-gray: hsl(210, 17%, 93%);
+            --border: hsl(210, 14%, 89%);
+            
+            --shadow-sm: 0 1px 3px hsla(0, 0%, 0%, 0.08);
+            --shadow-md: 0 4px 6px hsla(0, 0%, 0%, 0.1);
+            --shadow-lg: 0 10px 25px -5px hsla(0, 0%, 0%, 0.1);
+            --shadow-xl: 0 20px 25px -5px hsla(0, 0%, 0%, 0.1), 0 10px 10px -5px hsla(0, 0%, 0%, 0.04);
+            
+            --radius: 0.75rem;
+            --radius-sm: 0.5rem;
+            --radius-lg: 1rem;
+            
+            --transition-base: all 0.2s ease;
+            --transition-movement: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --transition-fade: all 0.15s ease-out;
+            --transition-bounce: all 0.5s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+    
+        /* ===== Base Styles ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: hsl(210, 20%, 98%);
+            color: var(--dark);
+            line-height: 1.5;
+            padding: 1.25rem;
+            -webkit-font-smoothing: antialiased;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+    
+        /* ===== Glassmorphism Container ===== */
+        .container {
+            width: min(95%, 64rem);
+            height: min(90vh, 50rem);
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            opacity: 0;
+            transform: translateY(1rem) scale(0.98);
+            animation: containerEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+        }
+    
+        @keyframes containerEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(1rem) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    
+        /* ===== Animated Gradient Header ===== */
+        .dashboard-header {
+            background: linear-gradient(
+                135deg,
+                var(--primary),
+                hsl(calc(var(--primary-h) + 10), var(--primary-s), var(--primary-l))
+            );
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+    
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to right,
+                rgba(255,255,255,0.1) 0%,
+                rgba(255,255,255,0) 20%,
+                rgba(255,255,255,0) 80%,
+                rgba(255,255,255,0.1) 100%
+            );
+            animation: shine 3s infinite linear;
+            z-index: -1;
+        }
+    
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    
+        .dashboard-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(
+                circle,
+                rgba(255,255,255,0.15) 0%,
+                rgba(255,255,255,0) 70%
+            );
+            animation: pulse 12s infinite ease-in-out;
+            z-index: -2;
+        }
+    
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+    
+        .welcome-message h3 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+            opacity: 0;
+            transform: translateX(-1rem);
+            animation: textSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+        }
+    
+        .welcome-message p {
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: translateX(-1rem);
+            animation: textSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s forwards;
+        }
+    
+        @keyframes textSlideIn {
+            0% { opacity: 0; transform: translateX(-1rem); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+    
+        .profile-icon {
+            width: 3rem;
+            height: 3rem;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            transition: var(--transition-movement);
+            opacity: 0;
+            transform: scale(0);
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s forwards;
+        }
+    
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0) rotate(-15deg); }
+            70% { opacity: 1; transform: scale(1.1) rotate(5deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0); }
+        }
+    
+        .profile-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+            background-color: rgba(255,255,255,0.3);
+        }
+    
+        /* ===== Content Area ===== */
+        .content-area {
+            padding: 1.5rem 2rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 0.6s forwards;
+        }
+    
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    
+        /* ===== Floating Cards ===== */
+        .card {
+            background: var(--light);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            transition: var(--transition-movement);
+            opacity: 0;
+            transform: translateY(1rem);
+            animation: cardSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) var(--delay, 0.7s) forwards;
+        }
+    
+        @keyframes cardSlideIn {
+            0% { opacity: 0; transform: translateY(1rem); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-0.5rem) perspective(1000px) rotateX(2deg);
+        }
+    
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+    
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            transition: var(--transition-movement);
+        }
+    
+        .card:hover .card-header::after {
+            width: 100%;
+        }
+    
+        /* Modified card-body to prevent scrolling */
+        .card-body {
+            padding: 1.5rem;
+            overflow: hidden !important;
+            display: flex;
+            flex-direction: column;
+        }
+    
+        /* ===== Animated Tables ===== */
+        /* Modified table-responsive to prevent scrolling */
+        .table-responsive {
+            width: 100%;
+            border-radius: var(--radius-sm);
+            overflow: visible !important;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+    
+        .info-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: auto;
+        }
+    
+        .info-table tr {
+            animation: tableRowFadeIn 0.5s ease-out both;
+            animation-delay: calc(var(--row-index) * 0.05s + 0.8s);
+        }
+    
+        @keyframes tableRowFadeIn {
+            0% { opacity: 0; transform: translateY(0.5rem); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    
+        .info-table tr:nth-child(even) {
+            background-color: var(--secondary);
+        }
+    
+        .info-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition-base);
+        }
+    
+        .info-table tr:hover td {
+            background-color: var(--primary-light);
+            transform: translateX(0.25rem);
+        }
+    
+        .info-label {
+            font-weight: 600;
+            color: var(--gray);
+            width: 35%;
+        }
+    
+        .fee-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: auto;
+        }
+    
+        .fee-table th {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            animation: fadeIn 0.5s ease-out 0.8s both;
+        }
+    
+        .fee-table tr {
+            animation: tableRowFadeIn 0.5s ease-out both;
+            animation-delay: calc(var(--row-index) * 0.05s + 0.9s);
+        }
+    
+        .fee-table td {
+            padding: 0.875rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition-base);
+        }
+    
+        .fee-table tr:hover td {
+            background-color: var(--primary-light);
+        }
+    
+        .fee-table tr:last-child td {
+            border-bottom: none;
+            font-weight: 700;
+            background-color: var(--primary-light);
+            animation: highlight 3s ease-in-out infinite;
+        }
+    
+        @keyframes highlight {
+            0%, 100% { 
+                background-color: var(--primary-light);
+                box-shadow: 0 0 0 rgba(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%), 0);
+            }
+            50% { 
+                background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.2);
+                box-shadow: 0 0 15px rgba(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%), 0.1);
+            }
+        }
+    
+        /* ===== 3D Buttons with Micro-interactions ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: var(--transition-movement);
+            border: none;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            z-index: 1;
+        }
+    
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.2) 0%,
+                rgba(255,255,255,0) 50%,
+                rgba(255,255,255,0.2) 100%
+            );
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
+        }
+    
+        .btn:hover::before {
+            transform: translateX(100%);
+        }
+    
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+    
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+    
+        @keyframes ripple {
+            0% { transform: scale(0, 0); opacity: 0.5; }
+            100% { transform: scale(20, 20); opacity: 0; }
+        }
+    
+        .btn svg {
+            width: 1rem;
+            height: 1rem;
+            transition: var(--transition-movement);
+            margin-right: 0.5rem;
+        }
+    
+        .btn-pay {
+            background-color: var(--success);
+            color: white;
+            box-shadow: 
+                0 2px 4px rgba(var(--success-h), var(--success-s), calc(var(--success-l) - 20%), 0.2),
+                0 4px 6px rgba(var(--success-h), var(--success-s), calc(var(--success-l) - 20%), 0.1);
+        }
+    
+        .btn-pay:hover {
+            background-color: hsl(var(--success-h), var(--success-s), calc(var(--success-l) - 8%));
+            transform: translateY(-0.25rem) perspective(1000px) translateZ(10px);
+            box-shadow: 
+                0 4px 8px rgba(var(--success-h), var(--success-s), calc(var(--success-l) - 20%), 0.2),
+                0 8px 12px rgba(var(--success-h), var(--success-s), calc(var(--success-l) - 20%), 0.1);
+        }
+    
+        .btn-pay:hover svg {
+            transform: translateX(0.25rem);
+        }
+    
+        .btn-history {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 
+                0 2px 4px rgba(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 20%), 0.2),
+                0 4px 6px rgba(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 20%), 0.1);
+        }
+    
+        .btn-history:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-0.25rem) perspective(1000px) translateZ(10px);
+            box-shadow: 
+                0 4px 8px rgba(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 20%), 0.2),
+                0 8px 12px rgba(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 20%), 0.1);
+        }
+    
+        .btn-logout {
+            background-color: var(--danger);
+            color: white;
+            box-shadow: 
+                0 2px 4px rgba(var(--danger-h), var(--danger-s), calc(var(--danger-l) - 20%), 0.2),
+                0 4px 6px rgba(var(--danger-h), var(--danger-s), calc(var(--danger-l) - 20%), 0.1);
+        }
+    
+        .btn-logout:hover {
+            background-color: hsl(var(--danger-h), var(--danger-s), calc(var(--danger-l) - 8%));
+            transform: translateY(-0.25rem) perspective(1000px) translateZ(10px);
+            box-shadow: 
+                0 4px 8px rgba(var(--danger-h), var(--danger-s), calc(var(--danger-l) - 20%), 0.2),
+                0 8px 12px rgba(var(--danger-h), var(--danger-s), calc(var(--danger-l) - 20%), 0.1);
+        }
+    
+        /* ===== Status Indicators ===== */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 1.25rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            transition: var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+    
+        .status::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255,255,255,0.3) 0%,
+                rgba(255,255,255,0) 50%,
+                rgba(255,255,255,0.3) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite linear;
+            opacity: 0.5;
+        }
+    
+        .status svg {
+            width: 0.875rem;
+            height: 0.875rem;
+            margin-right: 0.375rem;
+            animation: pulse 2s infinite ease;
+        }
+    
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    
+        .status-paid {
+            background-color: var(--success-light);
+            color: var(--success);
+            box-shadow: inset 0 0 0 1px rgba(var(--success-h), var(--success-s), var(--success-l), 0.2);
+        }
+    
+        .status-processing {
+            background-color: var(--warning-light);
+            color: var(--warning);
+            box-shadow: inset 0 0 0 1px rgba(var(--warning-h), var(--warning-s), var(--warning-l), 0.2);
+        }
+    
+        .status-pending {
+            background-color: var(--danger-light);
+            color: var(--danger);
+            box-shadow: inset 0 0 0 1px rgba(var(--danger-h), var(--danger-s), var(--danger-l), 0.2);
+        }
+    
+        /* ===== Action Buttons Container ===== */
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+    
+        /* Pay Button Style */
+        .pay-btn {
+            background-color: var(--success);
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+    
+        .pay-btn:hover {
+            background-color: hsl(var(--success-h), var(--success-s), calc(var(--success-l) - 8%));
+        }
+    
+        /* Paid Label Style */
+        .paid-label {
+            background-color: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: inline-block;
+        }
+    
+        /* Processing Label Style */
+        .processing-label {
+            background-color: var(--warning);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+    
+        /* Pulsing animation for processing state */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    
+        /* Optional: Add some spacing around the elements */
+        #tuitionAction, #hostelAction {
+            margin: 8px 0;
+        }
+    
+        /* ===== Responsive Design ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .container {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                max-height: none;
+            }
+            
+            .dashboard-header {
+                padding: 1.25rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .profile-icon {
+                margin-top: 0.5rem;
+            }
+            
+            .content-area {
+                padding: 1.25rem;
+                gap: 1.25rem;
+            }
+            
+            .card-header, .card-body {
+                padding: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    
+        @media (max-width: 480px) {
+            .info-table td, 
+            .fee-table th, 
+            .fee-table td {
+                padding: 0.75rem;
+                font-size: 0.875rem;
+            }
+            
+            .card-header {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="dashboard-header">
+        <div class="welcome-message">
+            <h3>Welcome, <span id="studentNameHeader"></span></h3>
+            <p>Student Dashboard</p>
+        </div>
+        <div class="profile-icon" id="profileInitial"></div>
+    </div>
+
+    <div class="content-area">
+        <div class="card">
+            <div class="card-header">Personal Information</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="info-table">
+                        <tr>
+                            <td class="info-label">Name:</td>
+                            <td id="studentName"></td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Email:</td>
+                            <td id="studentEmail"></td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Register Number:</td>
+                            <td id="studentRegisterNumber"></td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Course:</td>
+                            <td id="studentCourse"></td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Department:</td>
+                            <td id="studentDepartment"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Fee Details</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="fee-table">
+                        <thead>
+                            <tr>
+                                <th>Fee Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tuition Fees</td>
+                                <td id="tuitionFeesAmount">--</td>
+                                <td id="tuitionAction"></td>
+                            </tr>
+                            <tr>
+                                <td>Hostel Fees</td>
+                                <td id="hostelFeesAmount">--</td>
+                                <td id="hostelAction"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Fees</strong></td>
+                                <td id="totalFeesDisplay">--</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-history" onclick="viewHistory()">View History</button>
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fetch Student Data on Page Load
+async function fetchStudentData() {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {  
+        window.location.href = "signin.html";
+        return;
+    }
+
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    };
+
+    // Set Student Information
+    setText("studentNameHeader", `${user.firstname} ${user.lastname}`);
+    setText("studentName", `${user.firstname} ${user.lastname}`);
+    setText("studentEmail", user.email);
+    setText("studentRegisterNumber", user.registerNumber);
+    setText("studentCourse", user.course);
+    setText("studentDepartment", user.department);  // Fixed this line
+document.getElementById("profileInitial").textContent = user.firstname.charAt(0).toUpperCase();
+    try {
+        const res = await fetch(`http://localhost:3001/student-fees/${user.registerNumber}`);
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+
+        const data = await res.json();
+        updateFeeSection(data);
+    } catch (err) {
+        console.error("Error fetching student data:", err);
+    }
+}
+// Payment Function - ONLY redirects to payment page now
+function payFees(type) {
+    const amountEl = document.getElementById(`${type}FeesAmount`);
+    
+    if (!amountEl) {
+        console.error(`Error: Missing amount element for ${type} fees.`);
+        return;
+    }
+
+    const amount = Number(amountEl.innerText.replace(/[^\d]/g, ''));
+    if (isNaN(amount) || amount <= 0) {
+        console.error(`Invalid amount for ${type}:`, amount);
+        return;
+    }
+
+    // Redirect to Payment Page WITHOUT setting processing status
+    window.location.href = `payment.html?type=${type}&amount=${amount}`;
+}
+
+// Update Fee Section - keeps the same strict checking logic
+function updateFeeSection(data) {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const invalidPayments = JSON.parse(localStorage.getItem("invalidPayments")) || [];
+
+    ["tuition", "hostel"].forEach(type => {
+        const amount = Number(data[`${type}Fees`]); 
+        const actionElement = document.getElementById(`${type}Action`);
+        const amountElement = document.getElementById(`${type}FeesAmount`);
+
+        if (!actionElement || !amountElement) return;
+
+        amountElement.innerText = `₹${amount}`;
+
+        // 1. Check if fees are paid (highest priority)
+        if (amount === 0) {
+            actionElement.innerHTML = '<span class="paid-label">Paid</span>';
+            localStorage.removeItem(`${user.registerNumber}_${type}_processing`);
+        } 
+        // 2. Check if payment was marked as invalid
+        else if (invalidPayments.includes(type)) {
+            actionElement.innerHTML = `<button class="pay-btn" onclick="payFees('${type}')">Pay</button>`;
+            localStorage.removeItem(`${user.registerNumber}_${type}_processing`);
+        }
+        // 4. Default to Pay button
+        else {
+            actionElement.innerHTML = `<button class="pay-btn" onclick="payFees('${type}')">Pay</button>`;
+        }
+    });
+
+    // Update total fees display
+    const totalFees = Number(data.tuitionFees) + Number(data.hostelFees);
+    document.getElementById("totalFeesDisplay").innerText = totalFees === 0 ? "Paid" : `₹${totalFees}`;
+}
+// Mark payment as invalid
+async function markInvalid(paymentId) {
+    try {
+        const res = await fetch(`http://localhost:3001/mark-invalid/${paymentId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+        });
+
+        if (res.ok) {
+            const user = JSON.parse(localStorage.getItem("user"));
+            const type = paymentId.includes("tuition") ? "tuition" : "hostel";
+            
+            // Add to invalid payments list
+            let invalidPayments = JSON.parse(localStorage.getItem("invalidPayments")) || [];
+            if (!invalidPayments.includes(type)) {
+                invalidPayments.push(type);
+                localStorage.setItem("invalidPayments", JSON.stringify(invalidPayments));
+            }
+            
+            // Clear processing status
+            localStorage.removeItem(`${user.registerNumber}_${type}_processing`);
+            
+            // Refresh display
+            updateFeeSection({
+                tuitionFees: document.getElementById("tuitionFeesAmount").innerText.replace(/[^\d]/g, ''),
+                hostelFees: document.getElementById("hostelFeesAmount").innerText.replace(/[^\d]/g, '')
+            });
+        } else {
+            const errorData = await res.json();
+            alert(`Failed to mark as invalid: ${errorData.message}`);
+        }
+    } catch (error) {
+        console.error("Error marking payment as invalid:", error);
+        alert("Error marking payment as invalid. Please try again.");
+    }
+}
+
+// Auto-refresh fee table
+async function refreshFeeTable() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) return;
+
+    try {
+        const res = await fetch(`http://localhost:3001/student-fees/${user.registerNumber}`);
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+
+        const data = await res.json();
+        
+        // Check if any processing payments have been completed
+        ["tuition", "hostel"].forEach(type => {
+            if (Number(data[`${type}Fees`]) === 0) {
+                localStorage.removeItem(`${user.registerNumber}_${type}_processing`);
+            }
+        });
+
+        updateFeeSection(data);
+    } catch (err) {
+        console.error("Error auto-refreshing fee table:", err);
+    }
+}
+
+// Logout function
+function logout() {
+    // Clear user session
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    window.location.href = "signin.html";
+}
+
+// View payment history
+function viewHistory() {
+    window.location.href = "history.html";
+}
+
+// Initialize the dashboard
+document.addEventListener("DOMContentLoaded", () => {
+    fetchStudentData();
+    setInterval(refreshFeeTable, 10000); // Auto-refresh every 10 seconds
+});
+</script>
+</body>
+</html>

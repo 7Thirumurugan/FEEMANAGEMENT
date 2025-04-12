@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Payment Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #20B2AA; /* lightseagreen */
+      --secondary-color: #1ba098;
+      --danger-color: #dc3545;
+      --success-color: #28a745;
+      --warning-color: #ffc107;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+    }
+    
+    .header {
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      padding: 15px 0;
+      margin-bottom: 30px;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .card-header {
+      background-color: white;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      font-weight: 600;
+      padding: 15px 20px;
+    }
+    
+    .table-responsive {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .table th {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 15px;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    .table td {
+      padding: 12px 15px;
+      vertical-align: middle;
+      border-top: 1px solid #eee;
+      text-align: center;
+    }
+    
+    .badge-pending {
+      background-color: var(--warning-color);
+    }
+    
+    .badge-paid {
+      background-color: var(--success-color);
+    }
+    
+    .badge-invalid {
+      background-color: var(--danger-color);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    
+    .action-btn {
+      width: 100px; /* Fixed width for all buttons */
+      padding: 6px 0; /* Consistent padding */
+      text-align: center;
+      font-size: 14px;
+    }
+    
+    .btn-verify {
+      background-color: var(--success-color);
+      color: white;
+      border: none;
+    }
+    
+    .btn-invalid {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+    }
+    
+    .btn-remove {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+    }
+    
+    .search-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+    
+    .pagination-container {
+      display: flex;
+      justify-content: center; /* Center pagination */
+      align-items: center;
+      margin-top: 20px;
+    }
+    
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      margin: 0 5px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #343a40;
+    }
+    
+    .page-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    
+    .page-btn:hover:not(.disabled) {
+      background-color: #f1f1f1;
+    }
+    
+    .page-btn.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .back-btn {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .back-btn:hover {
+      color: var(--secondary-color);
+    }
+
+    /* Pagination info styling */
+    .pagination-info-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    
+    /* Improved alignment for table cells */
+    .table td:nth-child(1),
+    .table th:nth-child(1) {
+      width: 50px;
+    }
+    
+    .table td:nth-child(8),
+    .table td:nth-child(9) {
+      white-space: nowrap;
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    /* Modal custom styles */
+    .modal-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .verify-icon {
+      color: var(--success-color);
+    }
+    
+    .invalid-icon {
+      color: var(--danger-color);
+    }
+    
+    .delete-icon {
+      color: var(--warning-color);
+    }
+    
+    .modal-footer-custom {
+      justify-content: center;
+      border-top: none;
+      padding-top: 0;
+    }
+    
+    .btn-cancel {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-confirm-verify {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-confirm-invalid {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-confirm-delete {
+      background-color: var(--warning-color);
+      color: white;
+    }
+    
+    /* Payment details in modal */
+    .payment-details {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .payment-detail-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    
+    .payment-detail-label {
+      font-weight: 600;
+      width: 120px;
+    }
+    
+    .payment-detail-value {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="admin.html" class="back-btn">
+          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        <h4 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Payment Management</h4>
+        <div></div> <!-- Empty div for alignment -->
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Search and Filters -->
+    <div class="search-container">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" id="searchInput" placeholder="Search by name, reg no...">
+        </div>
+        <div class="col-md-3">
+          <input type="date" class="form-control" id="dateInput">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="statusFilter">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="invalid">Invalid</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-secondary w-100" onclick="resetFilters()">
+            <i class="fas fa-sync-alt me-2"></i>Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list me-2"></i>Payment Records</span>
+        <div class="text-muted small" id="paginationInfo"></div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Student Name</th>
+                <th>Reg No</th>
+                <th>Department</th>
+                <th>Year</th>
+                <th>Semester</th>
+                <th>UPI ID</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Fee Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="paymentTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="pagination-info-container">
+          <div class="text-muted small" id="recordInfo"></div>
+        </div>
+        <div class="pagination-container">
+          <button class="page-btn" id="prevPage" onclick="changePage(-1)" disabled>
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div id="pageNumbers" class="d-flex"></div>
+          <button class="page-btn" id="nextPage" onclick="changePage(1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verify Payment Modal -->
+  <div class="modal fade" id="verifyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center py-4">
+          <div class="modal-icon verify-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h5 class="modal-title mb-3">Verify Payment</h5>
+          <p>Are you sure you want to verify this payment?</p>
+          
+          <div class="payment-details" id="verifyPaymentDetails">
+            <!-- Payment details will be inserted here -->
+          </div>
+          
+          <p class="text-muted">This action will mark the payment as verified and update the student's records.</p>
+        </div>
+        <div class="modal-footer modal-footer-custom">
+          <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-confirm-verify" id="confirmVerify">Verify Payment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mark as Invalid Modal -->
+  <div class="modal fade" id="invalidModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center py-4">
+          <div class="modal-icon invalid-icon">
+            <i class="fas fa-times-circle"></i>
+          </div>
+          <h5 class="modal-title mb-3">Mark as Invalid</h5>
+          <p>Are you sure you want to mark this payment as invalid?</p>
+          
+          <div class="payment-details" id="invalidPaymentDetails">
+            <!-- Payment details will be inserted here -->
+          </div>
+          
+          <p class="text-muted">This action cannot be undone. The student will be notified about the invalid payment.</p>
+        </div>
+        <div class="modal-footer modal-footer-custom">
+          <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-confirm-invalid" id="confirmInvalid">Mark as Invalid</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Payment Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center py-4">
+          <div class="modal-icon delete-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h5 class="modal-title mb-3">Delete Payment Record</h5>
+          <p>Are you sure you want to permanently delete this payment record?</p>
+          
+          <div class="payment-details" id="deletePaymentDetails">
+            <!-- Payment details will be inserted here -->
+          </div>
+          
+          <p class="text-danger">Warning: This action cannot be undone. All data related to this payment will be permanently removed.</p>
+        </div>
+        <div class="modal-footer modal-footer-custom">
+          <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-confirm-delete" id="confirmDelete">Delete Permanently</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_URL = "http://localhost:3001";
+    let allPayments = [];
+    let filteredPayments = [];
+    let currentPage = 1;
+    const rowsPerPage = 7;
+    let totalPages = 1;
+    let autoRefreshInterval;
+    
+    // Modal instances
+    let verifyModal;
+    let invalidModal;
+    let deleteModal;
+    
+    // Current payment being processed
+    let currentPaymentId = null;
+    let currentPaymentData = null;
+
+    // Initialize the page
+    document.addEventListener("DOMContentLoaded", () => {
+        checkAdminAuth();
+        setupEventListeners();
+        initModals();
+        fetchPayments();
+        startAutoRefresh();
+    });
+
+    // Check admin authentication
+    function checkAdminAuth() {
+        const token = localStorage.getItem("adminToken");
+        if (!token) {
+            window.location.href = "signin.html";
+        }
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+        document.getElementById("searchInput").addEventListener("input", filterPayments);
+        document.getElementById("dateInput").addEventListener("change", filterPayments);
+        document.getElementById("statusFilter").addEventListener("change", filterPayments);
+        
+        // Confirm button listeners
+        document.getElementById("confirmVerify").addEventListener("click", () => {
+            verifyModal.hide();
+            verifyPayment(currentPaymentId);
+        });
+        
+        document.getElementById("confirmInvalid").addEventListener("click", () => {
+            invalidModal.hide();
+            markInvalid(currentPaymentId);
+        });
+        
+        document.getElementById("confirmDelete").addEventListener("click", () => {
+            deleteModal.hide();
+            removePayment(currentPaymentId);
+        });
+    }
+    
+    // Initialize Bootstrap modals
+    function initModals() {
+        verifyModal = new bootstrap.Modal(document.getElementById('verifyModal'));
+        invalidModal = new bootstrap.Modal(document.getElementById('invalidModal'));
+        deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    }
+
+    // Start auto-refresh of payments
+    function startAutoRefresh() {
+        // Clear any existing interval
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+        
+        // Set new interval (30 seconds)
+        autoRefreshInterval = setInterval(() => {
+            // Only refresh if no filters are active
+            const searchTerm = document.getElementById("searchInput").value;
+            const dateFilter = document.getElementById("dateInput").value;
+            const statusFilter = document.getElementById("statusFilter").value;
+            
+            if (!searchTerm && !dateFilter && !statusFilter) {
+                fetchPayments();
+            }
+        }, 30000); // 30 seconds
+    }
+
+    // Fetch payments from server with loading state
+    async function fetchPayments() {
+        try {
+            showLoadingState();
+            
+            const token = localStorage.getItem("adminToken");
+            const response = await fetch(`${API_URL}/admin/payments`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem("adminToken");
+                    window.location.href = "signin.html";
+                    return;
+                }
+                throw new Error(await response.text());
+            }
+
+            allPayments = await response.json();
+            
+            // Sort by date (newest first)
+            allPayments.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            filteredPayments = [...allPayments];
+            renderTable();
+            updatePagination();
+        } catch (error) {
+            console.error("Error fetching payments:", error);
+            showErrorState("Failed to load payments. Please try again.");
+        }
+    }
+
+    // Show loading state in table
+    function showLoadingState() {
+        document.getElementById("paymentTable").innerHTML = `
+            <tr>
+                <td colspan="12" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading payments...</p>
+                </td>
+            </tr>
+        `;
+    }
+
+    // Show error state in table
+    function showErrorState(message) {
+        document.getElementById("paymentTable").innerHTML = `
+            <tr>
+                <td colspan="12" class="text-center py-4 text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                    <button class="btn btn-sm btn-primary mt-2" onclick="fetchPayments()">
+                        <i class="fas fa-sync-alt me-2"></i>Try Again
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+
+    // Filter payments based on search criteria
+    function filterPayments() {
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        const dateFilter = document.getElementById("dateInput").value;
+        const statusFilter = document.getElementById("statusFilter").value.toLowerCase();
+
+        filteredPayments = allPayments.filter(payment => {
+            // Search across multiple fields
+            const matchesSearch = 
+                (payment.studentName?.toLowerCase().includes(searchTerm) || false) ||
+                (payment.registerNumber?.toLowerCase().includes(searchTerm) || false) ||
+                (payment.department?.toLowerCase().includes(searchTerm) || false) ||
+                (payment.feeType?.toLowerCase().includes(searchTerm) || false) ||
+                (payment.upiId?.toLowerCase().includes(searchTerm) || false) ||
+                (payment.year?.toString().includes(searchTerm) || false) ||
+                (payment.semester?.toString().includes(searchTerm) || false);
+
+            // Date filter
+            const paymentDate = payment.date ? new Date(payment.date).toISOString().split('T')[0] : "";
+            const matchesDate = dateFilter ? paymentDate === dateFilter : true;
+            
+            // Status filter (case insensitive)
+            const paymentStatus = (payment.status || "").toLowerCase();
+            const matchesStatus = !statusFilter || 
+                                (statusFilter === "pending" && paymentStatus === "processing") ||
+                                (statusFilter === "invalid" && paymentStatus === "failed") ||
+                                paymentStatus === statusFilter;
+
+            return matchesSearch && matchesDate && matchesStatus;
+        });
+
+        currentPage = 1;
+        renderTable();
+        updatePagination();
+        
+        // Restart auto-refresh with new filter conditions
+        startAutoRefresh();
+    }
+
+    // Reset all filters
+    function resetFilters() {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("dateInput").value = "";
+        document.getElementById("statusFilter").value = "";
+        
+        filteredPayments = [...allPayments];
+        currentPage = 1;
+        renderTable();
+        updatePagination();
+        
+        // Restart auto-refresh
+        startAutoRefresh();
+    }
+
+    // Render the payment table
+    function renderTable() {
+        const tableBody = document.getElementById("paymentTable");
+        tableBody.innerHTML = "";
+
+        // Calculate pagination
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const endIndex = Math.min(startIndex + rowsPerPage, filteredPayments.length);
+        const paginatedPayments = filteredPayments.slice(startIndex, endIndex);
+        totalPages = Math.ceil(filteredPayments.length / rowsPerPage);
+
+        if (filteredPayments.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="12" class="text-center py-4">No payments found</td>
+                </tr>
+            `;
+            return;
+        }
+
+        // Populate table rows
+        paginatedPayments.forEach((payment, index) => {
+            const statusClass = payment.status === "paid" ? "badge-paid" : 
+                              payment.status === "failed" ? "badge-invalid" : "badge-pending";
+            const statusText = payment.status === "paid" ? "Paid" : 
+                             payment.status === "failed" ? "Invalid" : "Pending";
+
+            tableBody.innerHTML += `
+                <tr id="payment-${payment._id}">
+                    <td>${startIndex + index + 1}</td>
+                    <td>${payment.studentName || "N/A"}</td>
+                    <td>${payment.registerNumber || "N/A"}</td>
+                    <td>${payment.department || "N/A"}</td>
+                    <td>${payment.year || "N/A"}</td>
+                    <td>${payment.semester || "N/A"}</td>
+                    <td>${payment.upiId || "N/A"}</td>
+                    <td>${payment.date ? new Date(payment.date).toLocaleDateString() : "N/A"}</td>
+                    <td>₹${payment.amount?.toLocaleString() || "0"}</td>
+                    <td>${payment.feeType || "N/A"}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            ${payment.status === "pending" || payment.status === "processing" ? `
+                                <button class="btn btn-sm btn-verify action-btn" onclick="showVerifyModal('${payment._id}')">
+                                    <i class="fas fa-check me-1"></i> Verify
+                                </button>
+                                <button class="btn btn-sm btn-invalid action-btn" onclick="showInvalidModal('${payment._id}')">
+                                    <i class="fas fa-times me-1"></i> Invalid
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-remove action-btn" onclick="showDeleteModal('${payment._id}')">
+                                    <i class="fas fa-trash me-1"></i> Remove
+                                </button>
+                            `}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        // Update record info
+        document.getElementById("recordInfo").textContent = 
+            `Showing ${startIndex + 1} to ${endIndex} of ${filteredPayments.length} records`;
+    }
+
+    // Update pagination controls
+    function updatePagination() {
+        const prevBtn = document.getElementById("prevPage");
+        const nextBtn = document.getElementById("nextPage");
+        const pageNumbers = document.getElementById("pageNumbers");
+
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+
+        // Generate page numbers
+        pageNumbers.innerHTML = "";
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement("button");
+            pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            pageBtn.textContent = i;
+            pageBtn.onclick = () => goToPage(i);
+            pageNumbers.appendChild(pageBtn);
+        }
+
+        document.getElementById("paginationInfo").textContent = 
+            `Page ${currentPage} of ${totalPages}`;
+    }
+
+    // Change page
+    function changePage(direction) {
+        currentPage += direction;
+        renderTable();
+        updatePagination();
+    }
+
+    // Go to specific page
+    function goToPage(page) {
+        currentPage = page;
+        renderTable();
+        updatePagination();
+    }
+    
+    // Show verify modal
+    function showVerifyModal(paymentId) {
+        currentPaymentId = paymentId;
+        currentPaymentData = allPayments.find(p => p._id === paymentId);
+        
+        if (!currentPaymentData) return;
+        
+        // Populate payment details in modal
+        document.getElementById("verifyPaymentDetails").innerHTML = `
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Student:</div>
+                <div class="payment-detail-value">${currentPaymentData.studentName} (${currentPaymentData.registerNumber})</div>
+            </div>
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Amount:</div>
+                <div class="payment-detail-value">₹${currentPaymentData.amount?.toLocaleString() || "0"}</div>
+            </div>
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Date:</div>
+                <div class="payment-detail-value">${currentPaymentData.date ? new Date(currentPaymentData.date).toLocaleDateString() : "N/A"}</div>
+            </div>
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">UPI ID:</div>
+                <div class="payment-detail-value">${currentPaymentData.upiId || "N/A"}</div>
+            </div>
+        `;
+        
+        verifyModal.show();
+    }
+    
+    // Show invalid modal
+    function showInvalidModal(paymentId) {
+        currentPaymentId = paymentId;
+        currentPaymentData = allPayments.find(p => p._id === paymentId);
+        
+        if (!currentPaymentData) return;
+        
+        // Populate payment details in modal
+        document.getElementById("invalidPaymentDetails").innerHTML = `
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Student:</div>
+                <div class="payment-detail-value">${currentPaymentData.studentName} (${currentPaymentData.registerNumber})</div>
+            </div>
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Amount:</div>
+                <div class="payment-detail-value">₹${currentPaymentData.amount?.toLocaleString() || "0"}</div>
+            </div>
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Fee Type:</div>
+                <div class="payment-detail-value">${currentPaymentData.feeType || "N/A"}</div>
+            </div>
+        `;
+        
+        invalidModal.show();
+    }
+    
+    // Show delete modal
+    function showDeleteModal(paymentId) {
+        currentPaymentId = paymentId;
+        currentPaymentData = allPayments.find(p => p._id === paymentId);
+        
+        if (!currentPaymentData) return;
+        
+        // Populate payment details in modal
+        document.getElementById("deletePaymentDetails").innerHTML = `
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Student:</div>
+                <div class="payment-detail-value">${currentPaymentData.studentName} (${currentPaymentData.registerNumber})</div>
+            </div>
+
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Amount:</div> 
+                <div class="payment-detail-value">₹${currentPaymentData.amount?.toLocaleString() || "0"}</div>
+            </div>
+
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Date:</div>
+                <div class="payment-detail-value">${currentPaymentData.date ? new Date(currentPaymentData.date).toLocaleDateString() : "N/A"}</div>
+            </div>
+            
+            <div class="payment-detail-row">
+                <div class="payment-detail-label">Status:</div>
+                <div class="payment-detail-value">
+                    <span class="badge ${currentPaymentData.status === "paid" ? "badge-paid" : 
+                                      currentPaymentData.status === "failed" ? "badge-invalid" : "badge-pending"}">
+                        ${currentPaymentData.status === "paid" ? "Paid" : 
+                         currentPaymentData.status === "failed" ? "Invalid" : "Pending"}
+                    </span>
+                </div>
+            </div>
+        `;
+        
+        deleteModal.show();
+    }
+
+    // Verify a payment
+    async function verifyPayment(paymentId) {
+        try {
+            // Show loading state on the row
+            const row = document.getElementById(`payment-${paymentId}`);
+            if (row) {
+                const actionCell = row.querySelector("td:last-child");
+                actionCell.innerHTML = `
+                    <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                `;
+            }
+
+            const token = localStorage.getItem("adminToken");
+            const response = await fetch(`${API_URL}/admin/verify-payment/${paymentId}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            const result = await response.json();
+            showToast("Payment verified successfully!", "success");
+            
+            // Update the payment in our local data
+            const paymentIndex = allPayments.findIndex(p => p._id === paymentId);
+            if (paymentIndex !== -1) {
+                allPayments[paymentIndex].status = "paid";
+            }
+            
+            // Re-apply filters and re-render without full refresh
+            filterPayments();
+        } catch (error) {
+            console.error("Verify error:", error);
+            showToast(error.message || "Failed to verify payment", "error");
+            
+            // Restore the row if error occurs
+            renderTable();
+        }
+    }
+
+    // Mark payment as invalid
+    async function markInvalid(paymentId) {
+        try {
+            // Show loading state on the row
+            const row = document.getElementById(`payment-${paymentId}`);
+            if (row) {
+                const actionCell = row.querySelector("td:last-child");
+                actionCell.innerHTML = `
+                    <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                `;
+            }
+
+            const token = localStorage.getItem("adminToken");
+            const response = await fetch(`${API_URL}/admin/invalid-payment/${paymentId}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            const result = await response.json();
+            showToast("Payment marked as invalid", "success");
+            
+            // Update the payment in our local data
+            const paymentIndex = allPayments.findIndex(p => p._id === paymentId);
+            if (paymentIndex !== -1) {
+                allPayments[paymentIndex].status = "failed";
+            }
+            // Re-apply filters and re-render without full refresh
+            filterPayments();
+        } catch (error) {
+            console.error("Invalid mark error:", error);
+            showToast(error.message || "Failed to mark payment as invalid", "error");
+            
+            // Restore the row if error occurs
+            renderTable();
+        }
+    }
+
+    // Remove a payment
+    async function removePayment(paymentId) {
+        try {
+            // Show loading state on the row
+            const row = document.getElementById(`payment-${paymentId}`);
+            if (row) {
+                const actionCell = row.querySelector("td:last-child");
+                actionCell.innerHTML = `
+                    <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                `;
+            }
+
+            const token = localStorage.getItem("adminToken");
+            const response = await fetch(`${API_URL}/admin/delete-payment/${paymentId}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            const result = await response.json();
+            showToast("Payment deleted successfully!", "success");
+            
+            // Remove the payment from our local data
+            allPayments = allPayments.filter(p => p._id !== paymentId);
+            filteredPayments = filteredPayments.filter(p => p._id !== paymentId);
+            
+            // Re-render the table without full refresh
+            renderTable();
+            updatePagination();
+        } catch (error) {
+            console.error("Delete error:", error);
+            showToast(error.message || "Failed to delete payment", "error");
+            
+            // Restore the row if error occurs
+            renderTable();
+        }
+    }
+
+    // Show toast notification
+    function showToast(message, type = "success") {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll(".toast");
+        existingToasts.forEach(toast => toast.remove());
+        
+        const toast = document.createElement("div");
+        toast.className = `toast show align-items-center text-white bg-${type}`;
+        toast.style.position = "fixed";
+        toast.style.bottom = "20px";
+        toast.style.right = "20px";
+        toast.style.zIndex = "1000";
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" 
+                        onclick="this.parentElement.parentElement.remove()">
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+  </script>
+</body>
+</html>

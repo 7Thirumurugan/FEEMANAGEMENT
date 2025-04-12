@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Fee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #20B2AA; /* lightseagreen */
+            --secondary-color: #1ba098;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            display: flex;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: #ffffff;
+            padding: 20px;
+            color: var(--dark-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .nav-menu {
+            flex-grow: 1;
+            margin-top: 20px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            color: var(--dark-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        /* Table */
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            font-weight: 500;
+        }
+
+        .table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+            border-top: 1px solid #eee;
+        }
+
+        .table tr:hover td {
+            background-color: rgba(32, 178, 170, 0.05);
+        }
+
+        /* Status Badges */
+        .badge-paid {
+            background-color: var(--success-color);
+        }
+
+        .badge-pending {
+            background-color: var(--danger-color);
+        }
+
+        /* Search and Filters */
+        .search-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .search-input, .filter-select {
+            height: 45px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            padding: 0 15px;
+        }
+
+        .search-input:focus, .filter-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(32, 178, 170, 0.2);
+        }
+
+        .btn-search {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            height: 45px;
+            padding: 0 20px;
+            border-radius: 6px;
+        }
+
+        .btn-search:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-reset {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            height: 45px;
+            padding: 0 20px;
+            border-radius: 6px;
+        }
+
+        .btn-reset:hover {
+            background-color: #5a6268;
+            color: white;
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background: white;
+            color: var(--dark-color);
+        }
+
+        .page-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-btn:hover:not(.disabled) {
+            background-color: #f1f1f1;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-upload {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-upload:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-download {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background-color: #138496;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        /* File name display */
+        .file-name {
+            margin-top: 5px;
+            font-size: 14px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .confirmation-modal {
+            background-color: white;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .modal-message {
+            margin-bottom: 25px;
+            color: #555;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .modal-btn-cancel {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+
+        .modal-btn-confirm {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 250px;
+            }
+            .content {
+                margin-left: 250px;
+                width: calc(100% - 250px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .content {
+                margin-left: 0;
+                width: 100%;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo-container">
+            <img src="img.jpg" alt="Logo" class="img-fluid" style="max-height: 80px;">
+            <img src="IMG2.jpg" alt="Logo" class="img-fluid mt-2" style="max-height: 80px;">
+        </div>
+
+        <h4 class="text-center mb-4"><i class="fas fa-user-shield me-2"></i>Admin Panel</h4>
+        
+        <div class="nav-menu">
+            <div class="nav-item">
+                <a href="admin.html" class="nav-link active">
+                    <i class="fas fa-table"></i>
+                    <span>Student Records</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="adminview.html" class="nav-link">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transactions</span>
+                </a>
+            </div>
+            <div class="nav-item mt-auto">
+                <a href="signin.html" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Records</h2>
+            <button class="btn btn-primary mobile-menu-btn d-lg-none" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Upload Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-file-upload me-2"></i>Upload Student Data</span>
+            </div>
+            <div class="card-body">
+                <form id="excelUploadForm" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="file" class="form-control" id="excelFile" accept=".xlsx, .xls">
+                        <div id="fileNameDisplay" class="file-name"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-upload w-100" id="uploadBtn">
+                            <i class="fas fa-upload me-2"></i>Upload
+                        </button>
+                    </div>
+                    <div class="col-12">
+                        <div id="uploadMessage" class="text-muted small"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-container mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control search-input" id="searchInput" 
+                           placeholder="Search by name, reg no...">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select filter-select" id="departmentSearch">
+                        <option value="">All Departments</option>
+                        <option value="CSE">Computer Science</option>
+                        <option value="IT">Information Technology</option>
+                        <option value="AIDS">AI & Data Science</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select filter-select" id="statusSearch">
+                        <option value="">All Statuses</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-reset w-100" onclick="resetSearch()">
+                        <i class="fas fa-sync-alt me-2"></i>Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-users me-2"></i>Student Records</span>
+                <div class="pagination-info" id="paginationInfo"></div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Name</th>
+                                <th>Register No</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                                <th>Semester</th>
+                                <th>Tuition Fees</th>
+                                <th>Hostel Fees</th>
+                                <th>Total Fees</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="pagination-container">
+                    <div class="pagination-info" id="recordInfo"></div>
+                    <div class="d-flex">
+                        <button class="page-btn" id="prevPage" onclick="changePage(-1)" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div id="pageNumbers" class="d-flex"></div>
+                        <button class="page-btn" id="nextPage" onclick="changePage(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-download" id="downloadExcel">
+                        <i class="fas fa-file-excel me-2"></i>Export Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="confirmation-modal">
+            <div class="modal-title">Confirm Reset</div>
+            <div class="modal-message">Are you sure you want to reset all student data? This action cannot be undone.</div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" id="cancelReset">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="confirmReset">Reset Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:3001";
+        let studentsData = [];
+        let filteredStudents = [];
+        let currentPage = 1;
+        const rowsPerPage = 7;
+        let totalPages = 1;
+        let uploadedFileName = null;
+
+        // Initialize the page
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAdminAuth();
+            setupEventListeners();
+            fetchStudents();
+            checkUploadButtonState();
+        });
+
+        // Check admin authentication
+        function checkAdminAuth() {
+            const token = localStorage.getItem("adminToken");
+            if (!token) {
+                window.location.href = "signin.html";
+            }
+        }
+
+        // Check and restore upload button state
+        function checkUploadButtonState() {
+            const uploadState = localStorage.getItem("uploadState");
+            const uploadBtn = document.getElementById("uploadBtn");
+            const fileNameDisplay = document.getElementById("fileNameDisplay");
+            
+            if (uploadState === "reset-ready") {
+                // If we had a successful upload before refresh
+                uploadBtn.innerHTML = '<i class="fas fa-undo me-2"></i>Reset';
+                uploadBtn.onclick = showConfirmationModal;
+                
+                // Restore the file name if it was saved
+                const savedFileName = localStorage.getItem("uploadedFileName");
+                if (savedFileName) {
+                    fileNameDisplay.textContent = `Selected: ${savedFileName}`;
+                    uploadedFileName = savedFileName;
+                }
+            } else {
+                // Set up for initial upload
+                uploadBtn.onclick = function() {
+                    document.getElementById("excelUploadForm").dispatchEvent(new Event('submit'));
+                };
+            }
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            document.getElementById("excelUploadForm").addEventListener("submit", handleFileUpload);
+            document.getElementById("excelFile").addEventListener("change", handleFileSelect);
+            document.getElementById("searchInput").addEventListener("input", filterStudents);
+            document.getElementById("departmentSearch").addEventListener("change", filterStudents);
+            document.getElementById("statusSearch").addEventListener("change", filterStudents);
+            document.getElementById("downloadExcel").addEventListener("click", downloadExcel);
+            document.getElementById("cancelReset").addEventListener("click", hideConfirmationModal);
+            document.getElementById("confirmReset").addEventListener("click", performReset);
+        }
+
+        // Show confirmation modal
+        function showConfirmationModal() {
+            document.getElementById("confirmationModal").classList.add("active");
+        }
+
+        // Hide confirmation modal
+        function hideConfirmationModal() {
+            document.getElementById("confirmationModal").classList.remove("active");
+        }
+
+        // Handle file selection
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById("fileNameDisplay").textContent = `Selected: ${file.name}`;
+            }
+        }
+
+        // Handle file upload
+        async function handleFileUpload(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById("excelFile");
+            const uploadBtn = document.getElementById("uploadBtn");
+            const uploadMessage = document.getElementById("uploadMessage");
+
+            if (!fileInput.files.length) {
+                showMessage("Please select an Excel file", "error");
+                return;
+            }
+
+            try {
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+                
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+                uploadedFileName = fileInput.files[0].name;
+                
+                // Save the file name to localStorage
+                localStorage.setItem("uploadedFileName", uploadedFileName);
+
+                const response = await fetch(`${API_URL}/upload-excel`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || "Upload failed");
+                }
+
+                const result = await response.json();
+                showMessage(result.message, "success");
+                
+                // Change button to reset after successful upload
+                uploadBtn.innerHTML = '<i class="fas fa-undo me-2"></i>Reset';
+                uploadBtn.onclick = showConfirmationModal;
+                
+                // Save the state to localStorage
+                localStorage.setItem("uploadState", "reset-ready");
+                
+                await fetchStudents();
+            } catch (error) {
+                console.error("Upload error:", error);
+                showMessage(error.message, "error");
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+
+        // Perform the reset after confirmation
+        async function performReset() {
+            hideConfirmationModal();
+            const uploadBtn = document.getElementById("uploadBtn");
+            const fileInput = document.getElementById("excelFile");
+            const fileNameDisplay = document.getElementById("fileNameDisplay");
+            const uploadMessage = document.getElementById("uploadMessage");
+
+            try {
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Resetting...';
+                
+                // Call API to clear data
+                const response = await fetch(`${API_URL}/students`, {
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to reset data. Server returned an error.");
+                }
+
+                // Reset UI elements
+                fileInput.value = "";
+                fileNameDisplay.textContent = "";
+                uploadedFileName = null;
+                
+                // Clear the saved state
+                localStorage.removeItem("uploadState");
+                localStorage.removeItem("uploadedFileName");
+                
+                // Change button back to upload
+                uploadBtn.innerHTML = '<i class="fas fa-upload me-2"></i>Upload';
+                uploadBtn.onclick = function() {
+                    document.getElementById("excelUploadForm").dispatchEvent(new Event('submit'));
+                };
+                
+                showMessage("All student data has been reset successfully", "success");
+                
+                // Refresh the student list (should be empty now)
+                studentsData = [];
+                filteredStudents = [];
+                renderTable();
+                updatePagination();
+            } catch (error) {
+                console.error("Reset error:", error);
+                showMessage(`Reset failed: ${error.message}`, "error");
+                
+                // Restore the reset button if operation failed
+                uploadBtn.innerHTML = '<i class="fas fa-undo me-2"></i>Reset';
+                uploadBtn.onclick = showConfirmationModal;
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+
+        // Fetch student data from server
+        async function fetchStudents() {
+            try {
+                const response = await fetch(`${API_URL}/students`, {
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("adminToken")}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem("adminToken");
+                        window.location.href = "signin.html";
+                    }
+                    throw new Error("Failed to fetch students");
+                }
+
+                studentsData = await response.json();
+                filteredStudents = [...studentsData];
+                renderTable();
+                updatePagination();
+            } catch (error) {
+                console.error("Fetch error:", error);
+                showMessage("Error loading student data. Please try again.", "error");
+            }
+        }
+
+        // Filter students based on search criteria
+        function filterStudents() {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            const department = document.getElementById("departmentSearch").value;
+            const status = document.getElementById("statusSearch").value;
+
+            filteredStudents = studentsData.filter(student => {
+                const isSingleDigitYearSearch = /^\d$/.test(searchTerm);
+                
+                if (isSingleDigitYearSearch) {
+                    return student.year.toString() === searchTerm &&
+                           (department === "" || student.department === department) &&
+                           (status === "" || (student.totalFees === 0 ? "Paid" : "Pending") === status);
+                } else {
+                    return (
+                        student.name.toLowerCase().includes(searchTerm) ||
+                        student.registerNumber.toLowerCase().includes(searchTerm) ||
+                        student.year.toString().includes(searchTerm) ||
+                        student.semester.toString().includes(searchTerm)
+                    ) &&
+                    (department === "" || student.department === department) &&
+                    (status === "" || (student.totalFees === 0 ? "Paid" : "Pending") === status);
+                }
+            });
+
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+
+        // Reset all search filters
+        function resetSearch() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("departmentSearch").value = "";
+            document.getElementById("statusSearch").value = "";
+            
+            filteredStudents = [...studentsData];
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+
+        // Render the student table
+        function renderTable() {
+            const tableBody = document.getElementById("studentTable");
+            tableBody.innerHTML = "";
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredStudents.length);
+            const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
+            totalPages = Math.ceil(filteredStudents.length / rowsPerPage);
+
+            paginatedStudents.forEach((student, index) => {
+                const status = student.totalFees === 0 ? "Paid" : "Pending";
+                const statusClass = status === "Paid" ? "badge-paid" : "badge-pending";
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${startIndex + index + 1}</td>
+                        <td>${student.name}</td>
+                        <td>${student.registerNumber}</td>
+                        <td>${student.department}</td>
+                        <td>${student.year}</td>
+                        <td>${student.semester}</td>
+                        <td>₹${student.tuitionFees.toLocaleString()}</td>
+                        <td>₹${student.hostelFees.toLocaleString()}</td>
+                        <td>₹${student.totalFees.toLocaleString()}</td>
+                        <td><span class="badge ${statusClass}">${status}</span></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("recordInfo").textContent = 
+                `Showing ${startIndex + 1} to ${endIndex} of ${filteredStudents.length} records`;
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            const prevBtn = document.getElementById("prevPage");
+            const nextBtn = document.getElementById("nextPage");
+            const pageNumbers = document.getElementById("pageNumbers");
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+
+            pageNumbers.innerHTML = "";
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement("button");
+                pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => goToPage(i);
+                pageNumbers.appendChild(pageBtn);
+            }
+        }
+
+        // Change page
+        function changePage(direction) {
+            currentPage += direction;
+            renderTable();
+            updatePagination();
+        }
+
+        // Go to specific page
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+            updatePagination();
+        }
+
+        // Download data as Excel
+        function downloadExcel() {
+            if (filteredStudents.length === 0) {
+                showMessage("No data available to download", "error");
+                return;
+            }
+
+            try {
+                const excelData = filteredStudents.map(student => ({
+                    "Name": student.name,
+                    "Register Number": student.registerNumber,
+                    "Department": student.department,
+                    "Year": student.year,
+                    "Semester": student.semester,
+                    "Tuition Fees": student.tuitionFees,
+                    "Hostel Fees": student.hostelFees,
+                    "Total Fees": student.totalFees,
+                    "Status": student.totalFees === 0 ? "Paid" : "Pending"
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(excelData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+                
+                const dateStr = new Date().toISOString().split('T')[0];
+                XLSX.writeFile(workbook, `Student_Records_${dateStr}.xlsx`);
+            } catch (error) {
+                console.error("Excel export error:", error);
+                showMessage("Failed to export data. Please try again.", "error");
+            }
+        }
+
+        // Show message to user
+        function showMessage(message, type) {
+            const uploadMessage = document.getElementById("uploadMessage");
+            uploadMessage.textContent = message;
+            uploadMessage.style.color = type === "error" ? "var(--danger-color)" : "var(--success-color)";
+            
+            setTimeout(() => {
+                uploadMessage.textContent = "";
+            }, 5000);
+        }
+
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("active");
+        }
+    </script>
+</body>
+</html>
